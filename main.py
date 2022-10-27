@@ -16,13 +16,16 @@ def plot(columnName, dfs: list, numbins=None):
     nbins = numbins is None if None else numbins
 
     for df in dfs:
-        fig.add_trace(go.Histogram(x=df.get(columnName), name=df.name,
+        fig.add_trace(go.Histogram(x=df.get(columnName), name=df.name + ' (' + str(len(df)) + ')',
                                    nbinsx=nbins, autobinx=autobin))
 
     fig.update_traces(opacity=0.4)
-    fig.update_layout(title_text=columnName, yaxis_title_text="Count",
-                      barmode='overlay')
+    fig.update_layout(title_text=columnName, yaxis_title_text="Count", xaxis_title_text=columnName,
+                      barmode='overlay'
+                      )
     fig.show()
+    fig.write_image(file=columnName + '.pdf', format='pdf')
+    fig.write_image(file=columnName + '.png', format='png')
 
 def print_hi():
     min2 = pn.read_csv('D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/min2.csv',
@@ -35,10 +38,10 @@ def print_hi():
         'D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/standard.csv',
         sep=';')
 
-    min2 = min2[min2['num_peaks'] != 1]
-    min3 = min3[min3['num_peaks'] != 1]
-    min4 = min4[min4['num_peaks'] != 1]
-    standard = standard[standard['num_peaks'] != 1]
+    min2 = min2[min2['num_peaks'] >= 3]
+    min3 = min3[min3['num_peaks'] >= 3]
+    min4 = min4[min4['num_peaks'] >= 3]
+    standard = standard[standard['num_peaks'] >= 3]
 
     min2.name = "min2"
     min3.name = "min3"
