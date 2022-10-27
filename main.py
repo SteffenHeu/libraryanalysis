@@ -17,8 +17,7 @@ def plot(columnName, dfs: list, numbins=None):
 
     for df in dfs:
         fig.add_trace(go.Histogram(x=df.get(columnName), name=df.name,
-                                   # xbins=dict(start=0, end=1, size=0.1)
-                                   autobinx=autobin, nbinsx=nbins))
+                                   nbinsx=nbins, autobinx=autobin))
 
     fig.update_traces(opacity=0.4)
     fig.update_layout(title_text=columnName, yaxis_title_text="Count",
