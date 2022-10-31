@@ -24,8 +24,8 @@ def plot(columnName, dfs: list, numbins=None):
                       barmode='overlay'
                       )
     fig.show()
-    fig.write_image(file=columnName + '.pdf', format='pdf')
-    fig.write_image(file=columnName + '.png', format='png')
+    # fig.write_image(file=columnName + '.pdf', format='pdf')
+    # fig.write_image(file=columnName + '.png', format='png')
 
 def print_hi():
     min2 = pn.read_csv('D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/min2.csv',
@@ -37,6 +37,16 @@ def print_hi():
     standard = pn.read_csv(
         'D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/standard.csv',
         sep=';')
+
+    min2.name = "min2"
+    min3.name = "min3"
+    min4.name = "min4"
+    standard.name = "standard"
+
+    dfs = [standard, min2, min3, min4]
+
+    plot('explained_intensity', dfs, 20)
+    plot('explained_peaks', dfs, 20)
 
     min2 = min2[min2['num_peaks'] >= 3]
     min3 = min3[min3['num_peaks'] >= 3]
@@ -52,9 +62,9 @@ def print_hi():
 
     plot('explained_intensity', dfs, 20)
     plot('explained_peaks', dfs, 20)
-    plot('num_peaks', dfs)
-    plot('spectral_entropy', dfs)
-    plot('normalized_entropy', dfs)
+    # plot('num_peaks', dfs)
+    # plot('spectral_entropy', dfs)
+    # plot('normalized_entropy', dfs)
 
 
 # Press the green button in the gutter to run the script.
