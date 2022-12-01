@@ -4,6 +4,7 @@ import numpy as np
 import kaleido
 import seaborn as sns
 import matplotlib.pyplot as plt
+from pandas import DataFrame
 from plotly.graph_objs.histogram import XBins
 
 
@@ -15,11 +16,11 @@ from plotly.graph_objs.histogram import XBins
 def plotSnsHist(columnName, dfs: list, numBins=None):
     numBins = 'auto' if numBins is None else numBins
     for df in dfs:
-        sns.histplot(data=df, x=columnName, bins=numBins, element="step", fill=False,
-                     label=df.name + ' (' + str(len(df)) + ')')
+        sns.histplot(data=df, x=columnName, bins=numBins,
+                     label=df.name + ' (' + str(len(df)) + ')', element="step", alpha=0.3)
     plt.legend()
     plt.savefig(columnName + '.png')
-    # plt.show()
+    plt.show()
     plt.close()
 
 
@@ -42,65 +43,104 @@ def plot(columnName, dfs: list, numbins=None):
 
 
 def print_hi():
-    min2 = pn.read_csv('D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/min2.csv',
-                       sep=';')
-    min3 = pn.read_csv('D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/min3.csv',
-                       sep=';')
-    min4 = pn.read_csv('D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/min4.csv',
-                       sep=';')
-    standard = pn.read_csv(
-        'D:/sciebo/Promotion/Auswertungen/20221027 - Mastermodul/20221014 - Pigmente/positiv/standard.csv',
+    mzmineMsdialCompare()
+    # compare500ms()
+    # compareMzmine()
+
+def compareMzmine():
+    mzm100msNogap: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/nist1950_100ms_hilic_wizard_nogap.csv',
         sep=';')
+    areaNogap = mzm100msNogap.filter(like=":area")
+    areaNogap["sdev"] = areaNogap.std(axis=1)
+    areaNogap["avg"] = areaNogap.mean(axis=1)
+    areaNogap["RSD of feature area"] = areaNogap["sdev"] / areaNogap["avg"]
+    areaNogap.name = "MZmine no gap"
 
-    min2.name = "min2"
-    min3.name = "min3"
-    min4.name = "min4"
-    standard.name = "standard"
+    mzm100ms: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/nist1950_100ms_hilic_wizard.csv',
+        sep=';')
+    area100 = mzm100ms.filter(like=":area")
+    area100["sdev"] = area100.std(axis=1)
+    area100["avg"] = area100.mean(axis=1)
+    mzm100ms["RSD of feature area"] = area100["sdev"] / area100["avg"]
+    mzm100ms.name = "MZmine - HILIC Wizard"
 
-    dfs = [standard, min2, min3, min4]
+    plotSnsHist("RSD of feature area", [mzm100ms, areaNogap], [0.0, 0.1, 0.2, .3, .4, .5, .6, .7, .8, .9, 1.0])
 
-    # plot('explained_intensity', dfs, 20)
-    # plot('explained_peaks', dfs, 20)
-    # plot('num_peaks', dfs)
 
-    min2 = min2[min2['num_peaks'] >= 2]
-    min3 = min3[min3['num_peaks'] >= 2]
-    min4 = min4[min4['num_peaks'] >= 2]
-    standard = standard[standard['num_peaks'] >= 2]
+def compare500ms():
+    mzm500ms: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/nist1950_500ms_hilic_wizard.csv',
+        sep=';')
+    area500 = mzm500ms.filter(like=":area")
+    area500["sdev"] = area500.std(axis=1)
+    area500["avg"] = area500.mean(axis=1)
+    area500["RSD 500 ms"] = area500["sdev"] / area500["avg"]
+    area500.name = "MZmine 500 ms"
+    msd500ms: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/msdial 500 ms default.csv',
+        sep=';')
+    msd500ms = msd500ms[msd500ms["Average mobility"] != -1]
+    msd500ms["RSD 500 ms"] = msd500ms["Stdev"] / msd500ms["Average"]
+    msd500ms.name = "MSDIAL 500 ms"
+    plotSnsHist("RSD 500 ms", [area500, msd500ms], [0.0, 0.1, 0.2, .3, .4, .5, .6, .7, .8, .9, 1.0])
 
-    min2.name = "min2"
-    min3.name = "min3"
-    min4.name = "min4"
-    standard.name = "standard"
 
-    dfs = [standard, min2, min3, min4]
+def mzmineMsdialCompare():
+    mzm100ms: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/nist1950_100ms_hilic_wizard.csv',
+        sep=';')
+    area100 = mzm100ms.filter(like=":area")
+    area100["sdev"] = area100.std(axis=1)
+    area100["Average"] = area100.mean(axis=1)
+    area100.name = "MZmine"
+    mzm100ms["RSD of feature area"] = area100["sdev"] / area100["Average"]
+    count = (mzm100ms["RSD of feature area"] < 0.3).sum()
+    mzm100ms.name = "MZmine - HILIC Wizard [" + str(count) + "]"
 
-    # plot('explained_intensity', dfs, 20)
-    # plot('explained_peaks', dfs, 20)
-    # plot('num_peaks', dfs)
-    # plot('spectral_entropy', dfs)
-    # plot('normalized_entropy', dfs)
-    polarity = "Positive"
-    plt.title(polarity)
-    plotSnsHist('explained_intensity', dfs, [0.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0])
-    plt.title(polarity)
-    plotSnsHist('explained_peaks', dfs, [0.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0])
-    plt.title(polarity)
-    plotSnsHist('num_peaks', dfs)
-    plt.title(polarity)
-    plotSnsHist('spectral_entropy', dfs, 10)
-    plt.title(polarity)
-    plotSnsHist('normalized_entropy', dfs, [0.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.0])
+    msd100msopt: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/MSDIAL 100 ms area.csv',
+        sep=';')
+    msd100msopt = msd100msopt[msd100msopt["Average mobility"] != -1]
+    msd100msopt["RSD of feature area"] = msd100msopt["Stdev"] / msd100msopt["Average"]
+    count = (msd100msopt["RSD of feature area"] < 0.3).sum()
+    msd100msopt.name = "MSDIAL - transferred parameters [" + str(count) + "]"
 
-    plt.title(polarity)
-    sns.scatterplot(data=standard, x="num_peaks", y="explained_peaks",
-                    label=standard.name + "(" + str(len(standard)) + ")")
-    sns.scatterplot(data=min2, x="num_peaks", y="explained_peaks", label=min2.name + "(" + str(len(min2)) + ")")
-    sns.scatterplot(data=min3, x="num_peaks", y="explained_peaks", label=min3.name + "(" + str(len(min3)) + ")")
-    sns.scatterplot(data=min4, x="num_peaks", y="explained_peaks", label=min4.name + "(" + str(len(min4)) + ")")
+    msd100msdefault: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/msdial_area_100ms_default.csv',
+        sep=';')
+    msd100msdefault = msd100msdefault[msd100msdefault["Average mobility"] != -1]
+    msd100msdefault["RSD of feature area"] = msd100msdefault["Stdev"] / msd100msdefault["Average"]
+    count = (msd100msdefault["RSD of feature area"] < 0.3).sum()
+    msd100msdefault.name = "MSDIAL - default, 2 det [" + str(count) + "]"
+
+    msd100msdefault500: DataFrame = pn.read_csv(
+        'D:/sciebo/Promotion/Auswertungen/MZmine Paper/20221128 - Nist sample/msdial_area_100ms_default_500height.csv',
+        sep=';')
+    msd100msdefault500 = msd100msdefault500[msd100msdefault500["Average mobility"] != -1]
+    msd100msdefault500["RSD of feature area"] = msd100msdefault500["Stdev"] / msd100msdefault500["Average"]
+    count = (msd100msdefault500["RSD of feature area"] < 0.3).sum()
+    msd100msdefault500.name = "MSDIAL - default, 500 height, 2 det [" + str(count) + "]"
+
+    # plotSnsHist("RSD of feature area", [mzm100ms, msd100msdefault500, msd100msdefault, msd100msopt],
+    #             [0.0, 0.1, 0.2, .3, .4, .5, .6, .7, .8, .9, 1.0])
+
+    # area100["Average"] = area100["Average"] / area100["Average"].max()
+    # msd100msdefault500["Average"] = msd100msdefault500["Average"] / msd100msdefault500["Average"].max()
+    areadfs = [area100, msd100msdefault500]
+    sns.histplot(area100, x="Average", element="step", log_scale=(True, False), label=area100.name)
+    sns.histplot(msd100msdefault500, x="Average", element="step", log_scale=(True, False), label=msd100msdefault500.name)
     plt.legend()
-    plt.savefig("scatter_peaks_num_vs_explained.png")
+    plt.show()
 
+    mzm100ms["software"] = "MZmine 3"
+    msd100msdefault500["software"] = "MSDIAL 4.92"
+    mzm100ms["Average"] = area100["Average"]
+    mergedDf = pn.concat([mzm100ms, msd100msdefault500])
+    g = sns.jointplot(mergedDf, x="RSD of feature area", y="Average", hue="software", kind='hist')
+    g.ax_joint.set_yscale("log")
+    plt.show()
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
